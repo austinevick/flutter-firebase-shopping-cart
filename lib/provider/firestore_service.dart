@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopping_cart/core/constant.dart';
 import '../model/product_model.dart';
 import '../model/user.dart';
 import 'authentication_service.dart';
@@ -9,7 +10,7 @@ final firestoreProvider = Provider((ref) => FirestoreService());
 class FirestoreService {
   final _usersCollection = FirebaseFirestore.instance.collection('users');
   final _productCollection = FirebaseFirestore.instance.collection('products');
-  final _cartCollection = FirebaseFirestore.instance.collection('user');
+  final _cartCollection = FirebaseFirestore.instance.collection('carts');
   final _auth = AuthenticationService();
 
   Future<void> addProducts(ProductModel products) async =>
@@ -23,26 +24,39 @@ class FirestoreService {
           ProductModel products) async =>
       await _cartCollection
           .doc(_auth.currentUser!.uid)
-          .collection('cart')
+          .collection('products')
           .add(products.toMap());
 
   Future<QuerySnapshot<Map<String, dynamic>>> getProductIdFromCart(
       String docId) async {
     return await _cartCollection
         .doc(_auth.currentUser!.uid)
-        .collection('cart')
+        .collection('products')
         .where('id', isEqualTo: docId)
         .get();
   }
 
-  Future removeProductFromCart(String id) async {
-    await _cartCollection.doc(_auth.currentUser!.uid).delete();
+// Experimental feature
+  Future<void> removeProductFromCart() async {
+    String docId = '';
+    final querySnapshot = await _cartCollection
+        .doc(_auth.currentUser!.uid)
+        .collection('products')
+        .get();
+    for (var element in querySnapshot.docs) {
+      docId = element.id;
+    }
+    await _cartCollection
+        .doc(_auth.currentUser!.uid)
+        .collection('products')
+        .doc(docId)
+        .delete();
   }
 
   Stream<List<ProductModel>> getProductsFromCart() {
     final products = _cartCollection
         .doc(_auth.currentUser!.uid)
-        .collection('cart')
+        .collection('products')
         .snapshots();
     return products.map((event) =>
         event.docs.map((e) => ProductModel.fromMap(e.data())).toList());

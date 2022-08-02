@@ -57,6 +57,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       final reference =
           await ref.watch(firestoreProvider).addProductsToCart(products);
       if (reference.id.isNotEmpty) {
+        print(reference.id);
         setState(() => isAlreadyInCart = true);
       }
       setState(() => isLoading = false);
@@ -73,14 +74,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   void getProductId() {
     final docSnapshot = FirestoreService().getProductIdFromCart(widget.docId!);
-    docSnapshot.then((querySnapshot) {
-      querySnapshot.docs.asMap().entries.forEach((element) {
-        print('${element.value['id']} is equal to ${widget.docId}');
-        if (element.value['id'] == widget.docId) {
-          setState(() => isAlreadyInCart = true);
-        }
-      });
-    });
+    docSnapshot.then((querySnapshot) =>
+        querySnapshot.docs.asMap().entries.forEach((element) {
+          print('${element.value['id']} is equal to ${widget.docId}');
+          if (element.value['id'] == widget.docId) {
+            setState(() => isAlreadyInCart = true);
+          }
+        }));
   }
 
   @override
@@ -92,8 +92,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ref, _) {
-      final n = ref.read(firestoreProvider);
-
       return Column(
         children: [
           Stack(

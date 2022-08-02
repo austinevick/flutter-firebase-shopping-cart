@@ -41,11 +41,8 @@ class _CartItemListState extends State<CartItemList> {
   Future<void> removeProductFromCart(WidgetRef ref) async {
     try {
       setState(() => isLoading = true);
-      await Future.delayed(
-          const Duration(seconds: 2),
-          (() => ref.read(firestoreProvider).removeProductFromCart(
-                widget.docId!,
-              )));
+      await Future.delayed(const Duration(seconds: 2),
+          (() => ref.read(firestoreProvider).removeProductFromCart()));
       ref.refresh(cartFutureProvider);
       setState(() => isLoading = false);
     } catch (e) {
@@ -56,6 +53,7 @@ class _CartItemListState extends State<CartItemList> {
 
   @override
   Widget build(BuildContext context) {
+    print(widget.docId);
     return Consumer(builder: (context, ref, _) {
       final n = ref.read(firestoreProvider);
       return MaterialButton(
